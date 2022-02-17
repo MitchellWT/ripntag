@@ -35,6 +35,8 @@ func createDir() {
 	ErrorCheck(err)
 }
 
+// createToken asks user for token and stores it in a local file (plain text)
+// TODO: need to add consideration when token is incorrect (test auth) and ask for token again
 func createToken() {
 	reader := bufio.NewReader(os.Stdin)
 

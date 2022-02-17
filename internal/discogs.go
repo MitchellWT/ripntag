@@ -105,8 +105,6 @@ func interactiveSelection(resArr []discogs.Result) *discogs.Release {
 			exit = true
 			selRel = rel
 			break
-		default:
-			continue
 		}
 		if exit {
 			break

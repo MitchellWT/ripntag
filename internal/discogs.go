@@ -2,9 +2,9 @@ package ripntag
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"os"
-	"strings"
 	"text/tabwriter"
 	"unicode"
 
@@ -16,11 +16,20 @@ var client = getClient()
 func getClient() discogs.Discogs {
 	client, err := discogs.New(&discogs.Options{
 		UserAgent: "ripntag",
-		//Token:     "TODO: needs to be pulled from a file on the machine. Maybe, ~/.config/ripntag/token",
+		Token:     getToken(),
 	})
 	ErrorCheck(err)
 
 	return client
+}
+
+func getToken() string {
+	Setup()
+
+	token, err := os.ReadFile(ConfigDir + "token")
+	ErrorCheck(err)
+
+	return string(token)
 }
 
 // AlbumArtistSearch searches the discogs database (using the provided album
@@ -95,8 +104,8 @@ func interactiveSelection(resArr []discogs.Result) *discogs.Release {
 		tabWrite.Flush()
 		// Clean input and collect first rune
 		lineByte, _, err := reader.ReadLine()
-		line := strings.TrimSpace(string(lineByte))
-		ans := rune(line[0])
+		lineByte = bytes.TrimSpace(lineByte)
+		ans := rune(lineByte[0])
 		ErrorCheck(err)
 
 		ans = unicode.ToUpper(ans)

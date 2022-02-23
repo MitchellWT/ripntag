@@ -7,6 +7,7 @@ import (
 
 	"github.com/spf13/cobra"
 	ripntag "gitlab.com/MitchellWT/ripntag/internal"
+	enums "gitlab.com/MitchellWT/ripntag/internal/enums"
 )
 
 var rootCmd = &cobra.Command{
@@ -43,10 +44,30 @@ func relativeToAbsolute(inputDir string) string {
 	return outDir + "/"
 }
 
+func emptyCheck(str string) string {
+	if len(str) < 1 {
+		log.Fatal("input is empty")
+	}
+	return str
+}
+
 func rootCommand(cmd *cobra.Command, args []string) {
-	//nonInter := cmd.Flag("non-interactive").Changed
-	//seaMethod := cmd.Flag("search").Value.String()
-	//albumDir := relativeToAbsolute(checkDir(args[0]))
+	nonInter := cmd.Flag("non-interactive").Changed
+	seaMethod, err := enums.ToSearchMethod(cmd.Flag("search").Value.String())
+	ripntag.ErrorCheck(err)
+	albumDir := relativeToAbsolute(checkDir(args[0]))
+
+	switch seaMethod {
+	case enums.Barcode:
+		barcode := emptyCheck(cmd.Flag("barcode").Value.String())
+		rel := ripntag.BarcodeSearch(barcode, nonInter)
+		ripntag.TagDiscRip(rel, albumDir)
+	case enums.ArtistAlbum:
+		artist := emptyCheck(cmd.Flag("artist").Value.String())
+		album := emptyCheck(cmd.Flag("album").Value.String())
+		rel := ripntag.ArtistAlbumSearch(artist, album, nonInter)
+		ripntag.TagDiscRip(rel, albumDir)
+	}
 }
 
 func init() {

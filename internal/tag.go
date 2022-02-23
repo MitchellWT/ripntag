@@ -2,6 +2,7 @@ package ripntag
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -79,7 +80,52 @@ func TagDiscRip(rel *discogs.Release, rootDir string) {
 }
 
 func TagFileName(rel *discogs.Release, rootDir string) {
+	files, err := os.ReadDir(rootDir)
+	ErrorCheck(err)
 
+	for _, file := range files {
+		// Checks If file is an audio file from our defined list
+		exit := true
+		nameSplit := strings.Split(strings.ToLower(file.Name()), ".")
+		for _, ext := range musicExtensions {
+			if nameSplit[len(nameSplit)-1] == ext {
+				exit = false
+			}
+		}
+		if exit {
+			continue
+		}
+
+		trackPosition := -1
+		var track discogs.Track
+		for index, tra := range rel.Tracklist {
+			re := regexp.MustCompile(`.+` + strings.ToLower(tra.Title) + `.+`)
+			match := re.MatchString(strings.ToLower(file.Name()))
+
+			if match {
+				track = tra
+				trackPosition = index
+			}
+		}
+		if trackPosition == -1 {
+			log.Fatal(fmt.Sprintf("Can't find track for %s!", file.Name()))
+		}
+
+		tagFile, err := taglib.Read(rootDir + file.Name())
+		ErrorCheck(err)
+
+		tagFile.SetTitle(track.Title)
+		tagFile.SetAlbum(rel.Title)
+		tagFile.SetArtist(convertArtists(track.Artists, rel.Artists))
+		tagFile.SetGenre(convertGenres(rel.Genres))
+		tagFile.SetTrack(trackPosition)
+		tagFile.SetYear(rel.Year)
+
+		ErrorCheck(tagFile.Save())
+
+		newName := fmt.Sprintf("%d - %s.%s", trackPosition, track.Title, nameSplit[len(nameSplit)-1])
+		os.Rename(rootDir+file.Name(), rootDir+newName)
+	}
 }
 
 func convertArtists(trkArts []discogs.ArtistSource, relArts []discogs.ArtistSource) string {

@@ -15,7 +15,7 @@ const (
 	ArtistAlbum           = 1
 )
 
-func toSearchMethod(s string) (SearchMethod, error) {
+func ToSearchMethod(s string) (SearchMethod, error) {
 	s = strings.ToLower(s)
 	switch s {
 	case "barcode":

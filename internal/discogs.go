@@ -32,13 +32,12 @@ func getToken() string {
 	return string(token)
 }
 
-// AlbumArtistSearch searches the discogs database (using the provided album
-// and artist) and returns the release struct
-func AlbumArtistSearch(album string, artist string, interactive bool) *discogs.Release {
+// BarcodeSearch searches the discogs database (using the provided barcode)
+// and returns the release struct
+func BarcodeSearch(barcode string, interactive bool) *discogs.Release {
 	seaReq := discogs.SearchRequest{
-		ReleaseTitle: album,
-		Artist:       artist,
-		Type:         "release",
+		Barcode: barcode,
+		Type:    "release",
 	}
 	resArr := runSearch(seaReq)
 
@@ -50,12 +49,13 @@ func AlbumArtistSearch(album string, artist string, interactive bool) *discogs.R
 	return rel
 }
 
-// BarcodeSearch searches the discogs database (using the provided barcode)
-// and returns the release struct
-func BarcodeSearch(barcode string, interactive bool) *discogs.Release {
+// ArtistAlbumSearch searches the discogs database (using the provided album
+// and artist) and returns the release struct
+func ArtistAlbumSearch(artist string, album string, interactive bool) *discogs.Release {
 	seaReq := discogs.SearchRequest{
-		Barcode: barcode,
-		Type:    "release",
+		ReleaseTitle: album,
+		Artist:       artist,
+		Type:         "release",
 	}
 	resArr := runSearch(seaReq)
 

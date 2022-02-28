@@ -52,7 +52,7 @@ func emptyCheck(s string) string {
 }
 
 func rootCommand(cmd *cobra.Command, args []string) {
-	nonInter := cmd.Flag("non-interactive").Changed
+	interactive := !cmd.Flag("non-interactive").Changed
 	seaMethod, err := enums.ToSearchMethod(cmd.Flag("search").Value.String())
 	ripntag.ErrorCheck(err)
 	tagType, err := enums.ToTagType(cmd.Flag("type").Value.String())
@@ -62,7 +62,7 @@ func rootCommand(cmd *cobra.Command, args []string) {
 	switch seaMethod {
 	case enums.Barcode:
 		barcode := emptyCheck(cmd.Flag("barcode").Value.String())
-		rel := ripntag.BarcodeSearch(barcode, nonInter)
+		rel := ripntag.BarcodeSearch(barcode, interactive)
 		switch tagType {
 		case enums.Rip:
 			ripntag.TagDiscRip(rel, albumDir)
@@ -72,7 +72,7 @@ func rootCommand(cmd *cobra.Command, args []string) {
 	case enums.ArtistAlbum:
 		artist := emptyCheck(cmd.Flag("artist").Value.String())
 		album := emptyCheck(cmd.Flag("album").Value.String())
-		rel := ripntag.ArtistAlbumSearch(artist, album, nonInter)
+		rel := ripntag.ArtistAlbumSearch(artist, album, interactive)
 		switch tagType {
 		case enums.Rip:
 			ripntag.TagDiscRip(rel, albumDir)

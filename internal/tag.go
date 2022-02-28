@@ -79,6 +79,7 @@ func TagDiscRip(rel *discogs.Release, rootDir string) {
 	}
 }
 
+// TODO: Make more robust (does not work with 'instramentals' and 'remixes')
 func TagFileName(rel *discogs.Release, rootDir string) {
 	files, err := os.ReadDir(rootDir)
 	ErrorCheck(err)

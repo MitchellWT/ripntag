@@ -16,18 +16,19 @@ func getConfigDir() string {
 	return homeDir + "/.config/ripntag/"
 }
 
+// Checks If setup must be ran
 func preSetupCheck() bool {
 	_, err := os.Stat(ConfigDir)
 	if err != nil && os.IsNotExist(err) {
-		return false
+		return true
 	}
 
 	_, err = os.Stat(ConfigDir + "token")
 	if err != nil && os.IsNotExist(err) {
-		return false
+		return true
 	}
 
-	return true
+	return false
 }
 
 func createDir() {
@@ -53,7 +54,7 @@ func createToken() {
 }
 
 func Setup() bool {
-	if preSetupCheck() {
+	if !preSetupCheck() {
 		return false
 	}
 

@@ -113,7 +113,6 @@ func interactiveSelection(resArr []discogs.Result) *discogs.Release {
 		case 'Y':
 			exit = true
 			selRel = rel
-			break
 		}
 		if exit {
 			break

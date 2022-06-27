@@ -27,8 +27,8 @@ var rootCmd = &cobra.Command{
 // checkDir performs some basic checks to ensure that the provided dir path
 // is correct, these included checking last rune and If the dir exists
 func checkDir(inputDir string) string {
-	if rune(inputDir[len(inputDir)-1]) != '/' {
-		inputDir = inputDir + "/"
+	if rune(inputDir[len(inputDir)-1]) == '/' {
+		inputDir = inputDir[:len(inputDir)-1]
 	}
 	if _, err := os.Stat(inputDir); os.IsNotExist(err) {
 		log.Fatal(err)

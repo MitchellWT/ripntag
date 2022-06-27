@@ -109,7 +109,7 @@ func TagFileName(rel *discogs.Release, rootDir string) {
 			}
 		}
 		if trackPosition == -1 {
-			log.Fatal(fmt.Sprintf("Can't find track for %s!", file.Name()))
+			log.Fatalf("Can't find track for %s!", file.Name())
 		}
 
 		tagFile, err := taglib.Read(rootDir + file.Name())

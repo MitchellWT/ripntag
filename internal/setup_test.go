@@ -6,6 +6,8 @@ import (
 )
 
 func TestPreSetupCheck(t *testing.T) {
+	token, _ := os.ReadFile(ConfigDir + "token")
+
 	os.RemoveAll(ConfigDir)
 	if !preSetupCheck() {
 		t.Error("Error: preSetupCheck equals false, should equal true")
@@ -23,4 +25,10 @@ func TestPreSetupCheck(t *testing.T) {
 
 	// Clean up
 	os.RemoveAll(ConfigDir)
+	// Re-create token If it previously existed
+	if len(token) > 0 {
+		os.MkdirAll(ConfigDir, 0755)
+		err := os.WriteFile(ConfigDir+"token", token, 0644)
+		ErrorCheck(err)
+	}
 }

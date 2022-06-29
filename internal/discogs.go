@@ -11,7 +11,7 @@ import (
 	"github.com/irlndts/go-discogs"
 )
 
-var client = getClient()
+var client discogs.Discogs
 
 func getClient() discogs.Discogs {
 	client, err := discogs.New(&discogs.Options{
@@ -28,6 +28,7 @@ func getToken() string {
 
 	token, err := os.ReadFile(ConfigDir + "token")
 	ErrorCheck(err)
+	token = bytes.ReplaceAll(token, []byte("\n"), []byte(""))
 
 	return string(token)
 }
@@ -35,6 +36,9 @@ func getToken() string {
 // BarcodeSearch searches the discogs database (using the provided barcode)
 // and returns the release struct
 func BarcodeSearch(barcode string, interactive bool) *discogs.Release {
+	if client == nil {
+		client = getClient()
+	}
 	seaReq := discogs.SearchRequest{
 		Barcode: barcode,
 		Type:    "release",
@@ -52,6 +56,9 @@ func BarcodeSearch(barcode string, interactive bool) *discogs.Release {
 // ArtistAlbumSearch searches the discogs database (using the provided album
 // and artist) and returns the release struct
 func ArtistAlbumSearch(artist string, album string, interactive bool) *discogs.Release {
+	if client == nil {
+		client = getClient()
+	}
 	seaReq := discogs.SearchRequest{
 		ReleaseTitle: album,
 		Artist:       artist,

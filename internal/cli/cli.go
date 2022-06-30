@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/irlndts/go-discogs"
 	"github.com/spf13/cobra"
 	ripntag "gitlab.com/MitchellWT/ripntag/internal"
 	enums "gitlab.com/MitchellWT/ripntag/internal/enums"
@@ -53,32 +54,31 @@ func emptyCheck(s string) string {
 
 func rootCommand(cmd *cobra.Command, args []string) {
 	interactive := !cmd.Flag("non-interactive").Changed
-	seaMethod, err := enums.ToSearchMethod(cmd.Flag("search").Value.String())
+	searchMethod, err := enums.ToSearchMethod(cmd.Flag("search").Value.String())
 	ripntag.ErrorCheck(err)
 	tagType, err := enums.ToTagType(cmd.Flag("type").Value.String())
 	ripntag.ErrorCheck(err)
 	albumDir := relativeToAbsolute(checkDir(args[0]))
 
-	switch seaMethod {
+	switch searchMethod {
 	case enums.Barcode:
 		barcode := emptyCheck(cmd.Flag("barcode").Value.String())
 		rel := ripntag.BarcodeSearch(barcode, interactive)
-		switch tagType {
-		case enums.Rip:
-			ripntag.TagDiscRip(rel, albumDir)
-		case enums.FileName:
-			ripntag.TagFileName(rel, albumDir)
-		}
+		startTagging(tagType, rel, albumDir)
 	case enums.ArtistAlbum:
 		artist := emptyCheck(cmd.Flag("artist").Value.String())
 		album := emptyCheck(cmd.Flag("album").Value.String())
 		rel := ripntag.ArtistAlbumSearch(artist, album, interactive)
-		switch tagType {
-		case enums.Rip:
-			ripntag.TagDiscRip(rel, albumDir)
-		case enums.FileName:
-			ripntag.TagFileName(rel, albumDir)
-		}
+		startTagging(tagType, rel, albumDir)
+	}
+}
+
+func startTagging(tagType enums.TagType, rel *discogs.Release, albumDir string) {
+	switch tagType {
+	case enums.Rip:
+		ripntag.TagDiscRip(rel, albumDir)
+	case enums.FileName:
+		ripntag.TagFileName(rel, albumDir)
 	}
 }
 

@@ -16,22 +16,20 @@ func getConfigDir() string {
 	return homeDir + "/.config/ripntag/"
 }
 
-// Checks If setup must be ran
+// Checks If setup needs to be ran
 func preSetupCheck() bool {
 	_, err := os.Stat(ConfigDir)
 	if err != nil && os.IsNotExist(err) {
 		return true
 	}
-
 	_, err = os.Stat(ConfigDir + "token")
 	if err != nil && os.IsNotExist(err) {
 		return true
 	}
-
 	return false
 }
 
-func createDir() {
+func createConfigDir() {
 	err := os.MkdirAll(ConfigDir, 0755)
 	ErrorCheck(err)
 }
@@ -39,12 +37,11 @@ func createDir() {
 // createToken asks user for token and stores it in a local file (plain text)
 // TODO: need to add consideration when token is incorrect (test auth) and ask for token again
 func createToken() {
-	reader := bufio.NewReader(os.Stdin)
-
 	fmt.Print("To use ripntag we need to access the discogs API. This requires\n" +
 		"a personal access token for your account. To generate this go to:\n\n" +
 		"Dashboard > Settings > Developers\n\n" +
 		"Please enter the generate token: ")
+	reader := bufio.NewReader(os.Stdin)
 	lineByte, _, err := reader.ReadLine()
 	token := bytes.TrimSpace(lineByte)
 	ErrorCheck(err)
@@ -53,12 +50,14 @@ func createToken() {
 	ErrorCheck(err)
 }
 
+// Setup runs a check to see If the discogs token exists in the ripntag
+// config directory, and asks for input If it does not exists
 func Setup() bool {
 	if !preSetupCheck() {
 		return false
 	}
 
-	createDir()
+	createConfigDir()
 	createToken()
 	return true
 }

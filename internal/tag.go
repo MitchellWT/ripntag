@@ -31,8 +31,9 @@ var musicExtensions = []string{
 	"m4r",
 	"m4v",
 	"mp4",
-	"wav",
-	"wave",
+	// Can't be tagged!!!
+	// "wav",
+	// "wave",
 	"aif",
 	"aiff",
 	"aifc",
@@ -47,39 +48,25 @@ func TagDiscRip(rel *discogs.Release, rootDir string) {
 		// Checks If file is an audio file from our defined list
 		exit := true
 		nameSplit := strings.Split(strings.ToLower(file.Name()), ".")
+		fileExt := nameSplit[len(nameSplit)-1]
 		for _, ext := range musicExtensions {
-			if nameSplit[len(nameSplit)-1] == ext {
+			if fileExt == ext {
 				exit = false
+				break
 			}
 		}
 		if exit {
 			continue
 		}
-
 		re := regexp.MustCompile(`\d+`)
-		trackPosition, err := strconv.Atoi(re.FindString(file.Name()))
+		trackPos, err := strconv.Atoi(re.FindString(file.Name()))
 		ErrorCheck(err)
 
-		track := rel.Tracklist[trackPosition-1]
-
-		tagFile, err := taglib.Read(rootDir + file.Name())
-		ErrorCheck(err)
-
-		tagFile.SetTitle(track.Title)
-		tagFile.SetAlbum(rel.Title)
-		tagFile.SetArtist(convertArtists(track.Artists, rel.Artists))
-		tagFile.SetGenre(convertGenres(rel.Genres))
-		tagFile.SetTrack(trackPosition)
-		tagFile.SetYear(rel.Year)
-
-		ErrorCheck(tagFile.Save())
-
-		newName := fmt.Sprintf("%d - %s.%s", trackPosition, track.Title, nameSplit[len(nameSplit)-1])
-		os.Rename(rootDir+file.Name(), rootDir+newName)
+		track := rel.Tracklist[trackPos-1]
+		tagFile(rel, track, rootDir, file.Name(), trackPos, fileExt)
 	}
 }
 
-// TODO: Make more robust (does not work with 'instramentals' and 'remixes')
 func TagFileName(rel *discogs.Release, rootDir string) {
 	files, err := os.ReadDir(rootDir)
 	ErrorCheck(err)
@@ -88,17 +75,17 @@ func TagFileName(rel *discogs.Release, rootDir string) {
 		// Checks If file is an audio file from our defined list
 		exit := true
 		nameSplit := strings.Split(strings.ToLower(file.Name()), ".")
+		fileExt := nameSplit[len(nameSplit)-1]
 		for _, ext := range musicExtensions {
-			if nameSplit[len(nameSplit)-1] == ext {
+			if fileExt == ext {
 				exit = false
 			}
 		}
 		if exit {
 			continue
 		}
-
-		track, trackPosition := matchFileName(rel, file.Name())
-		if trackPosition == -1 && strings.ContainsAny(strings.ToLower(file.Name()), "()[]") {
+		track, trackPos := matchFileName(rel, file.Name())
+		if trackPos == -1 && strings.ContainsAny(strings.ToLower(file.Name()), "()[]") {
 			replacer := strings.NewReplacer(
 				"(", "",
 				")", "",
@@ -106,42 +93,47 @@ func TagFileName(rel *discogs.Release, rootDir string) {
 				"]", "",
 			)
 			fixedFileName := replacer.Replace(strings.ToLower(file.Name()))
-			track, trackPosition = matchFileName(rel, fixedFileName)
+			track, trackPos = matchFileName(rel, fixedFileName)
 		}
-		if trackPosition == -1 {
+		if trackPos == -1 {
 			log.Fatalf("Can't find track for %s!", file.Name())
 		}
-
-		tagFile, err := taglib.Read(rootDir + file.Name())
-		ErrorCheck(err)
-
-		tagFile.SetTitle(track.Title)
-		tagFile.SetAlbum(rel.Title)
-		tagFile.SetArtist(convertArtists(track.Artists, rel.Artists))
-		tagFile.SetGenre(convertGenres(rel.Genres))
-		tagFile.SetTrack(trackPosition)
-		tagFile.SetYear(rel.Year)
-
-		ErrorCheck(tagFile.Save())
-
-		newName := fmt.Sprintf("%d - %s.%s", trackPosition, track.Title, nameSplit[len(nameSplit)-1])
-		os.Rename(rootDir+file.Name(), rootDir+newName)
+		tagFile(rel, track, rootDir, file.Name(), trackPos, fileExt)
 	}
 }
 
 func matchFileName(rel *discogs.Release, fileName string) (discogs.Track, int) {
 	var track discogs.Track
+	max := 0
 	trackPosition := -1
 	for index, relTrack := range rel.Tracklist {
-		re := regexp.MustCompile(`.*` + prepForMatch(relTrack.Title) + `.*`)
-		match := re.MatchString(prepForMatch(fileName))
-
-		if match {
+		re := regexp.MustCompile(prepForMatch(relTrack.Title))
+		match := re.FindString(prepForMatch(fileName))
+		if len(match) > max {
+			max = len(match)
 			track = relTrack
 			trackPosition = index + 1
 		}
 	}
 	return track, trackPosition
+}
+
+func tagFile(rel *discogs.Release, track discogs.Track, rootDir string,
+	fileName string, trackPos int, fileExt string) {
+	tagFile, err := taglib.Read(rootDir + fileName)
+	ErrorCheck(err)
+
+	tagFile.SetTitle(track.Title)
+	tagFile.SetAlbum(rel.Title)
+	tagFile.SetArtist(convertArtists(track.Artists, rel.Artists))
+	tagFile.SetGenre(convertGenres(rel.Genres))
+	tagFile.SetTrack(trackPos)
+	tagFile.SetYear(rel.Year)
+
+	ErrorCheck(tagFile.Save())
+
+	newName := fmt.Sprintf("%d - %s.%s", trackPos, track.Title, fileExt)
+	os.Rename(rootDir+fileName, rootDir+newName)
 }
 
 func prepForMatch(str string) string {

@@ -76,6 +76,7 @@ func rootCommand(cmd *cobra.Command, args []string) {
 func startTagging(tagType enums.TagType, rel *discogs.Release, albumDir string) {
 	switch tagType {
 	case enums.Rip:
+		albumDir := ripntag.WavToFlac(albumDir)
 		ripntag.TagDiscRip(rel, albumDir)
 	case enums.FileName:
 		ripntag.TagFileName(rel, albumDir)

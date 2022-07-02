@@ -36,50 +36,44 @@ func getToken() string {
 // BarcodeSearch searches the discogs database (using the provided barcode)
 // and returns the release struct
 func BarcodeSearch(barcode string, interactive bool) *discogs.Release {
-	if client == nil {
-		client = getClient()
-	}
-	seaReq := discogs.SearchRequest{
+	lazyLoadClient()
+	searchReq := discogs.SearchRequest{
 		Barcode: barcode,
 		Type:    "release",
 	}
-	resArr := runSearch(seaReq)
-
-	rel, err := client.Release(resArr[0].ID)
-	ErrorCheck(err)
-	if interactive {
-		rel = interactiveSelection(resArr)
-	}
-	return rel
+	return runSearch(searchReq, interactive)
 }
 
 // ArtistAlbumSearch searches the discogs database (using the provided album
 // and artist) and returns the release struct
 func ArtistAlbumSearch(artist string, album string, interactive bool) *discogs.Release {
-	if client == nil {
-		client = getClient()
-	}
-	seaReq := discogs.SearchRequest{
+	lazyLoadClient()
+	searchReq := discogs.SearchRequest{
 		ReleaseTitle: album,
 		Artist:       artist,
 		Type:         "release",
 	}
-	resArr := runSearch(seaReq)
+	return runSearch(searchReq, interactive)
+}
 
-	rel, err := client.Release(resArr[0].ID)
-	ErrorCheck(err)
-	if interactive {
-		rel = interactiveSelection(resArr)
+func lazyLoadClient() {
+	if client == nil {
+		client = getClient()
 	}
-	return rel
 }
 
 // runSearch is a helper function that runs the provided search request
-func runSearch(seaReq discogs.SearchRequest) []discogs.Result {
-	sea, err := client.Search(seaReq)
+func runSearch(seaReq discogs.SearchRequest, interactive bool) *discogs.Release {
+	search, err := client.Search(seaReq)
 	ErrorCheck(err)
 
-	return sea.Results
+	rel, err := client.Release(search.Results[0].ID)
+	ErrorCheck(err)
+
+	if interactive {
+		rel = interactiveSelection(search.Results)
+	}
+	return rel
 }
 
 // interactiveSelection is a helper function that provides an interactive
@@ -87,8 +81,8 @@ func runSearch(seaReq discogs.SearchRequest) []discogs.Result {
 func interactiveSelection(resArr []discogs.Result) *discogs.Release {
 	var selRel *discogs.Release
 	reader := bufio.NewReader(os.Stdin)
-	exit := false
 
+forLoop:
 	for _, res := range resArr {
 		rel, err := client.Release(res.ID)
 		ErrorCheck(err)
@@ -111,19 +105,16 @@ func interactiveSelection(resArr []discogs.Result) *discogs.Release {
 		tabWrite.Flush()
 		// Clean input and collect first rune
 		lineByte, _, err := reader.ReadLine()
-		lineByte = bytes.TrimSpace(lineByte)
-		ans := rune(lineByte[0])
 		ErrorCheck(err)
 
+		lineByte = bytes.TrimSpace(lineByte)
+		ans := rune(lineByte[0])
 		ans = unicode.ToUpper(ans)
+
 		switch ans {
 		case 'Y':
-			exit = true
 			selRel = rel
-			break
-		}
-		if exit {
-			break
+			break forLoop
 		}
 	}
 	return selRel

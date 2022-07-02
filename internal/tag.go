@@ -45,25 +45,19 @@ func TagDiscRip(rel *discogs.Release, rootDir string) {
 	ErrorCheck(err)
 
 	for _, file := range files {
-		// Checks If file is an audio file from our defined list
-		exit := true
 		nameSplit := strings.Split(strings.ToLower(file.Name()), ".")
 		fileExt := nameSplit[len(nameSplit)-1]
 		for _, ext := range musicExtensions {
 			if fileExt == ext {
-				exit = false
+				re := regexp.MustCompile(`\d+`)
+				trackPos, err := strconv.Atoi(re.FindString(file.Name()))
+				ErrorCheck(err)
+
+				track := rel.Tracklist[trackPos-1]
+				tagFile(rel, track, rootDir, file.Name(), trackPos, fileExt)
 				break
 			}
 		}
-		if exit {
-			continue
-		}
-		re := regexp.MustCompile(`\d+`)
-		trackPos, err := strconv.Atoi(re.FindString(file.Name()))
-		ErrorCheck(err)
-
-		track := rel.Tracklist[trackPos-1]
-		tagFile(rel, track, rootDir, file.Name(), trackPos, fileExt)
 	}
 }
 
@@ -73,49 +67,45 @@ func TagFileName(rel *discogs.Release, rootDir string) {
 
 	for _, file := range files {
 		// Checks If file is an audio file from our defined list
-		exit := true
 		nameSplit := strings.Split(strings.ToLower(file.Name()), ".")
 		fileExt := nameSplit[len(nameSplit)-1]
 		for _, ext := range musicExtensions {
 			if fileExt == ext {
-				exit = false
+				track, trackPos := matchFileName(rel, file.Name())
+				if trackPos == -1 && strings.ContainsAny(strings.ToLower(file.Name()), "()[]") {
+					replacer := strings.NewReplacer(
+						"(", "",
+						")", "",
+						"[", "",
+						"]", "",
+					)
+					fixedFileName := replacer.Replace(strings.ToLower(file.Name()))
+					track, trackPos = matchFileName(rel, fixedFileName)
+				}
+				if trackPos == -1 {
+					log.Fatalf("Can't find track for %s!", file.Name())
+				}
+				tagFile(rel, track, rootDir, file.Name(), trackPos, fileExt)
+				break
 			}
 		}
-		if exit {
-			continue
-		}
-		track, trackPos := matchFileName(rel, file.Name())
-		if trackPos == -1 && strings.ContainsAny(strings.ToLower(file.Name()), "()[]") {
-			replacer := strings.NewReplacer(
-				"(", "",
-				")", "",
-				"[", "",
-				"]", "",
-			)
-			fixedFileName := replacer.Replace(strings.ToLower(file.Name()))
-			track, trackPos = matchFileName(rel, fixedFileName)
-		}
-		if trackPos == -1 {
-			log.Fatalf("Can't find track for %s!", file.Name())
-		}
-		tagFile(rel, track, rootDir, file.Name(), trackPos, fileExt)
 	}
 }
 
 func matchFileName(rel *discogs.Release, fileName string) (discogs.Track, int) {
-	var track discogs.Track
+	track := discogs.Track{}
 	max := 0
-	trackPosition := -1
+	trackPos := -1
 	for index, relTrack := range rel.Tracklist {
 		re := regexp.MustCompile(prepForMatch(relTrack.Title))
 		match := re.FindString(prepForMatch(fileName))
 		if len(match) > max {
 			max = len(match)
 			track = relTrack
-			trackPosition = index + 1
+			trackPos = index + 1
 		}
 	}
-	return track, trackPosition
+	return track, trackPos
 }
 
 func tagFile(rel *discogs.Release, track discogs.Track, rootDir string,

@@ -23,5 +23,5 @@ func WavToFlac(rootDir string) string {
 		err := cmd.Run()
 		ErrorCheck(err)
 	}
-	return destDir
+	return destDir + "/"
 }

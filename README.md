@@ -1,3 +1,5 @@
+![](https://img.shields.io/github/workflow/status/MitchellWT/ripntag/Cool%20Workflow/main?style=flat-square)
+
 # Rip 'N Tag
 
 ## About
@@ -8,6 +10,15 @@ Tagging can be done via a CD <strong>rip</strong> where all CD files appear as '
 
 - Barcode
 - Artist and Album Name
+
+## Installation
+
+The following dependencies are required to install and run ripntag:
+
+- taglib (https://taglib.org/)
+- ffmpeg (https://ffmpeg.org/)
+
+Consult your distributions documentation for information on installation.
 
 To install from source run the following commands:
 

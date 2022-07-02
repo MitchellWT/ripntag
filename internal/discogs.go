@@ -98,7 +98,7 @@ forLoop:
 		for index, track := range rel.Tracklist {
 			termPrompt += fmt.Sprintf(" \t%d) %s\n", index+1, track.Title)
 		}
-		termPrompt += "\n" + "Is this the album your looking for (Y/n): "
+		termPrompt += "\n" + "Is this the album your looking for (y/N): "
 		// Print termPrompt to screen with formatting
 		tabWrite := tabwriter.NewWriter(os.Stdout, 0, 0, 1, ' ', tabwriter.TabIndent)
 		fmt.Fprint(tabWrite, termPrompt)

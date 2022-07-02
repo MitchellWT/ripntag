@@ -14,6 +14,11 @@ jobs:
       - uses: actions/setup-go@v3
         with:
           go-version: 1.17
+      - run: mkdir -p ~/.config/ripntag
+      - run: echo "$DISCOGS_TOKEN" > ~/.config/ripntag/token
+        shell: bash
+        env:
+          DISCOGS_TOKEN: ${{secrets.DISCOGS_TOKEN}}
       - run: sudo apt-get install ffmpeg libtagc0-dev
       - run: go test -v ./...
       - run: go build -v -o ripntag cmd/ripntag/main.go

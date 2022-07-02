@@ -2,10 +2,10 @@ package main
 
 import (
 	ripntag "gitlab.com/MitchellWT/ripntag/internal"
+	"gitlab.com/MitchellWT/ripntag/internal/cli"
 )
 
 func main() {
-	ripntag.WavToFlac("/home/mitchell/Music/Death Magnetic Epic")
-	// ripntag.Setup()
-	// cli.Execute()
+	ripntag.Setup()
+	cli.Execute()
 }

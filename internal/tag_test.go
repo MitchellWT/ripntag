@@ -17,6 +17,7 @@ func TestTagDiscRipLow(t *testing.T) {
 	rel := BarcodeSearch("4943674277988", false)
 	TagDiscRip(rel, rootDir)
 
+	checkFileExists(rootDir+"cover.jpeg", t)
 	checkFile(rootDir+"1 - Speed Of Life.flac", t, "Speed Of Life", "Low", "David Bowie", "Electronic;Rock;Art Rock;Ambient", 1, 2018)
 	checkFile(rootDir+"2 - Breaking Glass.flac", t, "Breaking Glass", "Low", "David Bowie", "Electronic;Rock;Art Rock;Ambient", 2, 2018)
 	checkFile(rootDir+"3 - What In The World.flac", t, "What In The World", "Low", "David Bowie", "Electronic;Rock;Art Rock;Ambient", 3, 2018)
@@ -39,6 +40,7 @@ func TestTagDiscRipPrettyHateMachine(t *testing.T) {
 	rel := BarcodeSearch("602527567730", false)
 	TagDiscRip(rel, rootDir)
 
+	checkFileExists(rootDir+"cover.jpeg", t)
 	checkFile(rootDir+"1 - Head Like A Hole.flac", t, "Head Like A Hole", "Pretty Hate Machine", "Nine Inch Nails", "Electronic;Industrial", 1, 2010)
 	checkFile(rootDir+"2 - Terrible Lie.flac", t, "Terrible Lie", "Pretty Hate Machine", "Nine Inch Nails", "Electronic;Industrial", 2, 2010)
 	checkFile(rootDir+"3 - Down In It.flac", t, "Down In It", "Pretty Hate Machine", "Nine Inch Nails", "Electronic;Industrial", 3, 2010)
@@ -66,6 +68,7 @@ func TestTagFileNameShroomeez(t *testing.T) {
 	rel := ArtistAlbumSearch("Infected Mushroom", "Shroomeez", false)
 	TagFileName(rel, rootDir)
 
+	checkFileExists(rootDir+"cover.jpeg", t)
 	checkFile(rootDir+"1 - You Wanna Stay.mp3", t, "You Wanna Stay", "Shroomeez", "Infected Mushroom", "Electronic;Psy-Trance", 1, 2021)
 	checkFile(rootDir+"2 - Leftovers.mp3", t, "Leftovers", "Shroomeez", "Infected Mushroom", "Electronic;Psy-Trance", 2, 2021)
 	checkFile(rootDir+"3 - Back At It.mp3", t, "Back At It", "Shroomeez", "Infected Mushroom", "Electronic;Psy-Trance", 3, 2021)
@@ -86,6 +89,7 @@ func TestTagFileNameSin(t *testing.T) {
 	rel := BarcodeSearch("016581261723", false)
 	TagFileName(rel, rootDir)
 
+	checkFileExists(rootDir+"cover.jpeg", t)
 	checkFile(rootDir+"1 - Sin Long.mp3", t, "Sin Long", "Sin (Long, Dub & Short)", "Nine Inch Nails", "Electronic;Rock;Industrial", 1, 1990)
 	checkFile(rootDir+"2 - Sin Dub.mp3", t, "Sin Dub", "Sin (Long, Dub & Short)", "Nine Inch Nails", "Electronic;Rock;Industrial", 2, 1990)
 	checkFile(rootDir+"3 - Get Down Make Love.mp3", t, "Get Down Make Love", "Sin (Long, Dub & Short)", "Nine Inch Nails", "Electronic;Rock;Industrial", 3, 1990)
@@ -106,6 +110,7 @@ func TestTagFileNameストライク_ザ_ブラッド(t *testing.T) {
 	rel := ArtistAlbumSearch("Kisida Kyoudan & The Akebosi Rockets", "ストライク・ザ・ブラッド", false)
 	TagFileName(rel, rootDir)
 
+	checkFileExists(rootDir+"cover.jpeg", t)
 	checkFile(rootDir+"1 - ストライク・ザ・ブラッド.mp3", t, "ストライク・ザ・ブラッド", "ストライク・ザ・ブラッド", "Kisida Kyoudan & The Akebosi Rockets", "Rock", 1, 2013)
 	checkFile(rootDir+"2 - ハンゲツトウゲ.mp3", t, "ハンゲツトウゲ", "ストライク・ザ・ブラッド", "Kisida Kyoudan & The Akebosi Rockets", "Rock", 2, 2013)
 	checkFile(rootDir+"3 - ストライク・ザ・ブラッド-Instrumenral-.mp3", t, "ストライク・ザ・ブラッド-Instrumenral-", "ストライク・ザ・ブラッド", "Kisida Kyoudan & The Akebosi Rockets", "Rock", 3, 2013)
@@ -123,6 +128,13 @@ func createTestDir(rootDir string, testingDir string) {
 		fileData, err := os.ReadFile(testingDir + file.Name())
 		ErrorCheck(err)
 		os.WriteFile(rootDir+file.Name(), fileData, 0644)
+	}
+}
+
+func checkFileExists(fileName string, t *testing.T) {
+	_, err := os.Stat(fileName)
+	if err != nil && os.IsNotExist(err) {
+		t.Errorf(`Error: %s does not exist, should exist`, fileName)
 	}
 }
 

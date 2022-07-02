@@ -2,7 +2,9 @@ package ripntag
 
 import (
 	"fmt"
+	"io/ioutil"
 	"log"
+	"net/http"
 	"os"
 	"regexp"
 	"strconv"
@@ -43,6 +45,7 @@ var musicExtensions = []string{
 func TagDiscRip(rel *discogs.Release, rootDir string) {
 	files, err := os.ReadDir(rootDir)
 	ErrorCheck(err)
+	downloadCover(rel, rootDir)
 
 	for _, file := range files {
 		nameSplit := strings.Split(strings.ToLower(file.Name()), ".")
@@ -64,6 +67,7 @@ func TagDiscRip(rel *discogs.Release, rootDir string) {
 func TagFileName(rel *discogs.Release, rootDir string) {
 	files, err := os.ReadDir(rootDir)
 	ErrorCheck(err)
+	downloadCover(rel, rootDir)
 
 	for _, file := range files {
 		// Checks If file is an audio file from our defined list
@@ -159,6 +163,20 @@ func convertGenres(genres []string, styles []string) string {
 		genStr = removeLastRune(genStr)
 	}
 	return genStr
+}
+
+func downloadCover(rel *discogs.Release, rootDir string) {
+	url := rel.Images[0].ResourceURL
+	urlSplit := strings.Split(url, ".")
+	imageExt := urlSplit[len(urlSplit)-1]
+	res, err := http.Get(url)
+	ErrorCheck(err)
+
+	defer res.Body.Close()
+	imageData, err := ioutil.ReadAll(res.Body)
+	ErrorCheck(err)
+	err = os.WriteFile(rootDir+"cover."+imageExt, imageData, 0644)
+	ErrorCheck(err)
 }
 
 func removeLastRune(input string) string {

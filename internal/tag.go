@@ -116,7 +116,7 @@ func tagFile(rel *discogs.Release, track discogs.Track, rootDir string,
 	tagFile.SetTitle(track.Title)
 	tagFile.SetAlbum(rel.Title)
 	tagFile.SetArtist(convertArtists(track.Artists, rel.Artists))
-	tagFile.SetGenre(convertGenres(rel.Genres))
+	tagFile.SetGenre(convertGenres(rel.Genres, rel.Styles))
 	tagFile.SetTrack(trackPos)
 	tagFile.SetYear(rel.Year)
 
@@ -133,13 +133,13 @@ func prepForMatch(str string) string {
 func convertArtists(trkArts []discogs.ArtistSource, relArts []discogs.ArtistSource) string {
 	artStr := ""
 	for _, artist := range trkArts {
-		artStr += artist.Name + "/"
+		artStr += artist.Name + ";"
 	}
 	if len(artStr) > 0 {
 		return removeLastRune(artStr)
 	}
 	for _, artist := range relArts {
-		artStr += artist.Name + "/"
+		artStr += artist.Name + ";"
 	}
 	if len(artStr) > 0 {
 		artStr = removeLastRune(artStr)
@@ -147,10 +147,13 @@ func convertArtists(trkArts []discogs.ArtistSource, relArts []discogs.ArtistSour
 	return artStr
 }
 
-func convertGenres(genres []string) string {
+func convertGenres(genres []string, styles []string) string {
 	genStr := ""
 	for _, genre := range genres {
-		genStr += genre + "/"
+		genStr += genre + ";"
+	}
+	for _, style := range styles {
+		genStr += style + ";"
 	}
 	if len(genStr) > 0 {
 		genStr = removeLastRune(genStr)

@@ -2,7 +2,10 @@ module gitlab.com/MitchellWT/ripntag
 
 go 1.17
 
-require github.com/spf13/cobra v1.3.0
+require (
+	github.com/spf13/cobra v1.3.0
+	github.com/webview/webview v0.0.0-20220703160653-5376baea64f0
+)
 
 require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect

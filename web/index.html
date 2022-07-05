@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <style-inject/>
+</head>
+<body>
+  <div class="body-container">
+    <h1>Rip 'N Tag</h1>
+
+    <form>
+      <div>
+        <label for="non-interactive">Non-Interactive</label>
+        <input id="non-interactive" name="non-interactive" type="checkbox"/>
+      </div>
+      <div class="seperate-lines">
+        <label for="search">Search</label>
+        <select name="search" id="search">
+          <option value="barcode">Barcode</option>
+          <option value="artist-album">Artist Album Name</option>
+        </select>
+      </div>
+      <div class="seperate-lines">
+        <label for="type">Tag Type</label>
+        <select name="type" id="type">
+          <option value="rip">CD Rip</option>
+          <option value="file-name">File Name</option>
+        </select>
+      </div>
+      <div class="seperate-lines barcode-input">
+        <label for="barcode">Barcode</label>
+        <input id="barcode" name="barcode" type="text"/>
+      </div>
+
+      <div class="seperate-lines  artist-album-input">
+        <label for="artist">Artist</label>
+        <input id="artist" name="artist" type="text"/>
+      </div>
+
+      <div class="seperate-lines artist-album-input">
+        <label for="album">Album</label>
+        <input id="album" name="album" type="text"/>
+      <div>
+
+      <div class="seperate-lines">
+        <button type="submit" value="submit">Start</button>
+        <button type="reset" value="reset">Clear</button>
+      </div>
+    </form>
+  </div>
+  <script-inject/>
+</body>
+</html>

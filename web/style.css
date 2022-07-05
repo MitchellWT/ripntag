@@ -1,0 +1,45 @@
+
+h1 {
+    font-size: 3em;
+    font-weight: 400;
+}
+
+label {
+    font-size: 1.5em;
+    font-weight: 400;
+}
+
+form > div {
+    display: flex;
+    align-items: center;
+    padding: 10px 0;
+}
+
+button {
+    width: 100%;
+}
+
+input[type="checkbox"] {
+    transform: scale(3);
+    margin: 0 30px;
+}
+
+input, select, button {
+    font-size: 2em;
+    font-weight: 400;
+}
+
+.body-container {
+    text-align: justify;
+}
+
+.seperate-lines {
+    flex-direction: column;
+    align-items: inherit;
+}
+
+.barcode-input {
+}
+
+.artist-album-input {
+}

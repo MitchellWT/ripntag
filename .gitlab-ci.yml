@@ -4,7 +4,7 @@ test-and-build:
     timeout: 10 minutes
     before_script:
         - apt update
-        - apt install ffmpeg libtagc0-dev
+        - apt install ffmpeg libtagc0-dev --yes
         - mkdir -p ~/.config/ripntag
         - echo $DISCOGS_TOKEN > ~/.config/ripntag/token
     script:

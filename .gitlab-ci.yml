@@ -3,9 +3,10 @@ test-and-build:
     image: golang:latest
     timeout: 10 minutes
     before_script:
+        - apt update
+        - apt install ffmpeg libtagc0-dev
         - mkdir -p ~/.config/ripntag
         - echo $DISCOGS_TOKEN > ~/.config/ripntag/token
-        - apt install ffmpeg libtagc0-dev
     script:
         - go test -v ./...
         - go build -v -o ripntag cmd/ripntag/main.go

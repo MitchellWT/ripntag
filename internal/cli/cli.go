@@ -12,11 +12,11 @@ import (
 )
 
 var rootCmd = &cobra.Command{
-	Use:   "ripntag [album directory]",
+	Use:   "ripntag",
 	Short: "Ripntag allows users to tag riped audio files with metadata",
 	Long: "Allows for files ripped from a music CD to be tagged with \n" +
 		"accurate metadata, also provides conversion from WAV.",
-	Args: cobra.ExactArgs(1),
+	Args: cobra.ExactArgs(0),
 	Run: func(cmd *cobra.Command, args []string) {
 		rootCommand(cmd, args)
 	},
@@ -53,12 +53,20 @@ func emptyCheck(s string) string {
 }
 
 func rootCommand(cmd *cobra.Command, args []string) {
+	// Kinda stupid way to handle booleans
 	interactive := !cmd.Flag("non-interactive").Changed
+	cdrip := !cmd.Flag("non-cdrip").Changed
 	searchMethod, err := enums.ToSearchMethod(cmd.Flag("search").Value.String())
 	ripntag.ErrorCheck(err)
 	tagType, err := enums.ToTagType(cmd.Flag("type").Value.String())
 	ripntag.ErrorCheck(err)
-	albumDir := relativeToAbsolute(checkDir(args[0]))
+	var albumDir string
+	if cdrip {
+		albumDir = relativeToAbsolute(cmd.Flag("out").Value.String())
+		ripntag.RipCD(albumDir)
+	} else {
+		albumDir = relativeToAbsolute(cmd.Flag("non-cdrip").Value.String())
+	}
 
 	switch searchMethod {
 	case enums.Barcode:
@@ -84,6 +92,7 @@ func startTagging(tagType enums.TagType, rel *discogs.Release, albumDir string) 
 }
 
 func init() {
+	rootCmd.Flags().StringP("non-cdrip", "d", "", "specifies album directory, stops cdrom ripping process")
 	rootCmd.Flags().BoolP("non-interactive", "n", false, "stops interactive selection, this forces the first \n"+
 		"album search result to be used")
 	rootCmd.Flags().StringP("search", "s", "barcode", "specifies the search method used on the discogs API, this \n"+
@@ -95,6 +104,7 @@ func init() {
 		"- file-name \n"+
 		"- rip")
 	rootCmd.Flags().StringP("barcode", "b", "", "barecode used for searching the discogs API")
+	rootCmd.Flags().StringP("out", "o", "./", "output directory (only used when cdripping)")
 	rootCmd.Flags().StringP("artist", "a", "", "artist used for searching the discogs API (album flag also required)")
 	rootCmd.Flags().StringP("album", "l", "", "album used for searching the discogs API (artist flag also required)")
 }

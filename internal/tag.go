@@ -128,6 +128,7 @@ func tagFile(rel *discogs.Release, track discogs.Track, rootDir string,
 
 	newName := fmt.Sprintf("%d - %s.%s", trackPos, track.Title, fileExt)
 	os.Rename(rootDir+fileName, rootDir+newName)
+	fmt.Println(fileName, ": Tagged and renamed to ", newName)
 }
 
 func prepForMatch(str string) string {

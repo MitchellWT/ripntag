@@ -45,13 +45,6 @@ func relativeToAbsolute(inputDir string) string {
 	return outDir + "/"
 }
 
-func emptyCheck(s string) string {
-	if len(s) < 1 {
-		log.Fatal("input is empty")
-	}
-	return s
-}
-
 func rootCommand(cmd *cobra.Command, args []string) {
 	// Kinda stupid way to handle booleans
 	interactive := !cmd.Flag("non-interactive").Changed
@@ -60,25 +53,35 @@ func rootCommand(cmd *cobra.Command, args []string) {
 	ripntag.ErrorCheck(err)
 	tagType, err := enums.ToTagType(cmd.Flag("type").Value.String())
 	ripntag.ErrorCheck(err)
+	barcode := cmd.Flag("barcode").Value.String()
+	artist := cmd.Flag("artist").Value.String()
+	album := cmd.Flag("album").Value.String()
+
 	var albumDir string
 	if cdrip {
-		albumDir = relativeToAbsolute(cmd.Flag("out").Value.String())
-		ripntag.RipCD(albumDir)
+		albumDir = relativeToAbsolute(checkDir(cmd.Flag("out").Value.String()))
 	} else {
-		albumDir = relativeToAbsolute(cmd.Flag("non-cdrip").Value.String())
+		albumDir = relativeToAbsolute(checkDir(cmd.Flag("non-cdrip").Value.String()))
 	}
 
+	var rel *discogs.Release
 	switch searchMethod {
 	case enums.Barcode:
-		barcode := emptyCheck(cmd.Flag("barcode").Value.String())
-		rel := ripntag.BarcodeSearch(barcode, interactive)
-		startTagging(tagType, rel, albumDir)
+		if !cmd.Flag("barcode").Changed {
+			log.Fatal("Error: Barcode not provided!")
+		}
+		rel = ripntag.BarcodeSearch(barcode, interactive)
 	case enums.ArtistAlbum:
-		artist := emptyCheck(cmd.Flag("artist").Value.String())
-		album := emptyCheck(cmd.Flag("album").Value.String())
-		rel := ripntag.ArtistAlbumSearch(artist, album, interactive)
-		startTagging(tagType, rel, albumDir)
+		if !cmd.Flag("artist").Changed || !cmd.Flag("album").Changed {
+			log.Fatal("Error: Artist and/or album not provided!")
+		}
+		rel = ripntag.ArtistAlbumSearch(artist, album, interactive)
 	}
+
+	if cdrip {
+		ripntag.RipCD(albumDir)
+	}
+	startTagging(tagType, rel, albumDir)
 }
 
 func startTagging(tagType enums.TagType, rel *discogs.Release, albumDir string) {

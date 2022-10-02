@@ -11,6 +11,8 @@ import (
 	"log"
 	"os"
 	"unsafe"
+
+	"github.com/cheggaaa/pb"
 )
 
 func RipCD(albumDir string) {
@@ -31,10 +33,16 @@ func RipCD(albumDir string) {
 
 	lastSector := C.cdda_disc_lastsector(drive)
 	discCursor := C.long(0)
+	lastTrack := C.cdda_tracks(drive)
 
-	for discCursor <= lastSector {
+	for discCursor <= lastSector && discCursor >= 0 {
 		trackFirstSec := discCursor
 		curTrack := C.cdda_sector_gettrack(drive, discCursor)
+		if curTrack == 0 {
+			curTrack++
+			discCursor = C.cdda_track_firstsector(drive, curTrack)
+			continue
+		}
 		trackLastSec := C.cdda_track_lastsector(drive, curTrack)
 		if trackLastSec > lastSector {
 			trackLastSec = lastSector
@@ -48,6 +56,7 @@ func RipCD(albumDir string) {
 		defer file.Close()
 
 		createWav(file, int32(trackLastSec-trackFirstSec+1)*C.CD_FRAMESIZE_RAW, endian)
+		progressBar := createProgressBar(int(trackLastSec-trackFirstSec), int(curTrack))
 		for discCursor <= trackLastSec {
 			readBuf := unsafe.Pointer(C.paranoia_read_limited(paranoia, nil, 20))
 			if readBuf == nil {
@@ -56,16 +65,23 @@ func RipCD(albumDir string) {
 			discCursor++
 			byteData := C.GoBytes(readBuf, C.CD_FRAMESIZE_RAW)
 			file.Write(byteData)
+			progressBar.Set(int(discCursor-trackFirstSec) - 1)
 		}
+
+		progressBar.Finish()
 		file.Close()
 		curTrack++
 		discCursor = C.cdda_track_firstsector(drive, curTrack)
-		C.paranoia_seek(paranoia, discCursor, 0)
+		if int(curTrack) <= int(lastTrack) {
+			C.paranoia_seek(paranoia, discCursor, 0)
+		}
 	}
 }
 
-func showProgress(progress int, goal int) {
-	// Create progress function for terminal
+func createProgressBar(end int, curTrack int) *pb.ProgressBar {
+	progressBar := pb.StartNew(end)
+	progressBar.Prefix(fmt.Sprintf("Track %d.wav | ", curTrack))
+	return progressBar
 }
 
 func createWav(file *os.File, byteCount int32, endian binary.ByteOrder) {
